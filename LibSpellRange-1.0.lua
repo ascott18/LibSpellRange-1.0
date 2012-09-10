@@ -1,5 +1,6 @@
 --- = Background =
--- Blizzard's IsSpellInRange API has always been very limited - you either must have the name of the spell, or its spell book ID. Checking directly by spellID is not possible. In Mists of Pandaria, Blizzard changed the way that many talents and specialization spells work - instead of giving you a new spell when leaned, they replace existing spells. These replacement spells do not work with Blizzard's IsSpellInRange function whatsoever; this limitation is what prompted the creation of this lib.
+-- Blizzard's IsSpellInRange API has always been very limited - you either must have the name of the spell, or its spell book ID. Checking directly by spellID is simply not possible.
+-- Now, in Mists of Pandaria, Blizzard changed the way that many talents and specialization spells work - instead of giving you a new spell when leaned, they replace existing spells. These replacement spells do not work with Blizzard's IsSpellInRange function whatsoever; this limitation is what prompted the creation of this lib.
 -- = Usage = 
 -- **LibSpellRange-1.0** exposes an enhanced version of IsSpellInRange that:
 -- * Allows ranged checking based on both spell name and spellID.
@@ -9,7 +10,7 @@
 -- @name LibSpellRange-1.0.lua
 
 local major = "SpellRange-1.0"
-local minor = 1
+local minor = 2
 
 assert(LibStub, format("%s requires LibStub.", major))
 
@@ -97,13 +98,13 @@ UpdateSpells()
 -- @param unit UnitID of the spell that you wish to check the range on.
 -- @return Exact same returns as http://wowprogramming.com/docs/api/IsSpellInRange
 -- @usage
--- -- Check spell range by spell name
+-- -- Check spell range by spell name on unit "target"
 -- local SpellRange = LibStub("SpellRange-1.0")
 -- local inRange = SpellRange.IsSpellInRange("Stormstrike", "target")
 --
--- -- Check spell range by spellID
+-- -- Check spell range by spellID on unit "mouseover"
 -- local SpellRange = LibStub("SpellRange-1.0")
--- local inRange = SpellRange.IsSpellInRange(17364, "target")
+-- local inRange = SpellRange.IsSpellInRange(17364, "mouseover")
 function Lib.IsSpellInRange(spell, unit)
 	local source = isNumber[spell] and spellsByID or spellsByName
 	spell = source[spell]
