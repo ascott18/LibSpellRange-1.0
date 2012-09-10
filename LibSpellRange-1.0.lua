@@ -1,0 +1,114 @@
+--- == Background ==
+-- Blizzard's IsSpellInRange API has always been very limited - you either must have the name of the spell, or its spell book ID. Checking directly by spellID is not possible. In Mists of Pandaria, Blizzard changed the way that many talents and specialization spells work - instead of giving you a new spell when leaned, they replace existing spells. These replacement spells do not work with Blizzard's IsSpellInRange function whatsoever; this limitation is what prompted the creation of this lib.
+-- == Usage == 
+-- **LibSpellRange-1.0** exposes an enhanced version of IsSpellInRange that:
+-- * Allows ranged checking based on both spell name and spellID.
+-- * Works correctly with replacement spells that will not work using Blizzard's IsSpellInRange method alone.
+--
+-- @class file
+-- @name LibSpellRange-1.0.lua
+
+local major = "SpellRange-1.0"
+local minor = 1
+
+assert(LibStub, format("%s requires LibStub.", major))
+
+local Lib = LibStub:NewLibrary(major, minor)
+if not Lib then return end
+
+local tonumber = _G.tonumber
+local strlower = _G.strlower
+local wipe = _G.wipe
+
+local GetSpellTabInfo = _G.GetSpellTabInfo
+local GetNumSpellTabs = _G.GetNumSpellTabs
+local GetSpellBookItemInfo = _G.GetSpellBookItemInfo
+local GetSpellBookItemName = _G.GetSpellBookItemName
+local GetSpellLink = _G.GetSpellLink
+local GetSpellInfo = _G.GetSpellInfo
+
+local IsSpellInRange = _G.IsSpellInRange
+
+-- isNumber is basically a tonumber cache for maximum efficiency
+Lib.isNumber = Lib.isNumber or setmetatable({}, {
+	__mode = "kv",
+	__index = function(t, i)
+		local o = tonumber(i) or false
+		t[i] = o
+		return o
+end})
+local isNumber = Lib.isNumber
+
+-- Matches lowercase spell names to their spellBookID
+Lib.spellsByName = Lib.spellsByName or {}
+local spellsByName = Lib.spellsByName
+
+-- Matches spellIDs to their spellBookID
+Lib.spellsByID = Lib.spellsByID or {}
+local spellsByID = Lib.spellsByID
+
+-- Handles updating spellsByName and spellsByID
+if not Lib.updaterFrame then
+	Lib.updaterFrame = CreateFrame("Frame")
+end
+Lib.updaterFrame:UnregisterAllEvents()
+Lib.updaterFrame:RegisterEvent("SPELLS_CHANGED")
+
+-- Updates spellsByName and spellsByID
+local function UpdateSpells()
+	local _, _, offs, numspells = GetSpellTabInfo(GetNumSpellTabs())
+
+	wipe(spellsByName)
+	wipe(spellsByID)
+	for spellBookID = 1, offs + numspells do
+		local type, baseSpellID = GetSpellBookItemInfo(spellBookID, "spell")
+		
+		if type == "SPELL" then
+			local currentSpellName = GetSpellBookItemName(spellBookID, "spell")
+			local link = GetSpellLink(currentSpellName)
+			local currentSpellID = tonumber(link and link:gsub("|", "||"):match("spell:(%d+)"))
+			
+			local baseSpellName = GetSpellInfo(baseSpellID)
+			
+			if currentSpellName then
+				spellsByName[strlower(currentSpellName)] = spellBookID
+			end
+			if baseSpellName then
+				spellsByName[strlower(baseSpellName)] = spellBookID
+			end
+			
+			if currentSpellID then
+				spellsByID[currentSpellID] = spellBookID
+			end
+			if baseSpellID then
+				spellsByID[baseSpellID] = spellBookID
+			end
+		end
+	end
+end
+
+Lib.updaterFrame:SetScript("OnEvent", UpdateSpells)
+UpdateSpells()
+
+--- Improved spell range checking function.
+-- @name SpellRange.IsSpellInRange
+-- @paramsig spell, unit
+-- @param spell Name or spellID of a spell that you wish to check the range of. The spell must be a spell that you have in your spellbook.
+-- @param unit UnitID of the spell that you wish to check the range on.
+-- @return Exact same returns as http://wowprogramming.com/docs/api/IsSpellInRange
+-- @usage
+-- -- Check spell range by spell name
+-- local SpellRange = LibStub("SpellRange-1.0")
+-- local inRange = SpellRange.IsSpellInRange("Stormstrike", "target")
+
+-- -- Check spell range by spellID
+-- local SpellRange = LibStub("SpellRange-1.0")
+-- local inRange = SpellRange.IsSpellInRange(17364, "target")
+function Lib.IsSpellInRange(spell, unit)
+	local source = isNumber[spell] and spellsByID or spellsByName
+	spell = source[spell]
+	
+	if spell then
+		return IsSpellInRange(spell, "spell", unit)
+	end
+end

@@ -1,0 +1,4 @@
+package-as: LibSpellRange-1.0
+
+externals:
+    libs/LibStub: svn://svn.wowace.com/wow/libstub/mainline/trunk

@@ -1,0 +1,11 @@
+## Interface: 50001
+## Title: Lib: SpellRange-1.0
+## Notes: Provides enhanced spell range checking functionality
+## Author: Cybeloras of Detheroc/Mal'Ganis
+## X-Category: Library
+
+#@no-lib-strip@
+libs\LibStub\LibStub.lua
+#@end-no-lib-strip@
+
+lib.xml
