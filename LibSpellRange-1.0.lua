@@ -100,7 +100,7 @@ UpdateSpells()
 -- -- Check spell range by spell name
 -- local SpellRange = LibStub("SpellRange-1.0")
 -- local inRange = SpellRange.IsSpellInRange("Stormstrike", "target")
-
+--
 -- -- Check spell range by spellID
 -- local SpellRange = LibStub("SpellRange-1.0")
 -- local inRange = SpellRange.IsSpellInRange(17364, "target")
