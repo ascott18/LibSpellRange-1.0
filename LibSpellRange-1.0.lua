@@ -1,6 +1,6 @@
---- == Background ==
+--- = Background =
 -- Blizzard's IsSpellInRange API has always been very limited - you either must have the name of the spell, or its spell book ID. Checking directly by spellID is not possible. In Mists of Pandaria, Blizzard changed the way that many talents and specialization spells work - instead of giving you a new spell when leaned, they replace existing spells. These replacement spells do not work with Blizzard's IsSpellInRange function whatsoever; this limitation is what prompted the creation of this lib.
--- == Usage == 
+-- = Usage = 
 -- **LibSpellRange-1.0** exposes an enhanced version of IsSpellInRange that:
 -- * Allows ranged checking based on both spell name and spellID.
 -- * Works correctly with replacement spells that will not work using Blizzard's IsSpellInRange method alone.
