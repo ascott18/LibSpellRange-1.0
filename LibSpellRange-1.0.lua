@@ -10,7 +10,7 @@
 -- @name LibSpellRange-1.0.lua
 
 local major = "SpellRange-1.0"
-local minor = 2
+local minor = 3
 
 assert(LibStub, format("%s requires LibStub.", major))
 
@@ -20,6 +20,7 @@ if not Lib then return end
 local tonumber = _G.tonumber
 local strlower = _G.strlower
 local wipe = _G.wipe
+local type = _G.type
 
 local GetSpellTabInfo = _G.GetSpellTabInfo
 local GetNumSpellTabs = _G.GetNumSpellTabs
@@ -39,6 +40,21 @@ Lib.isNumber = Lib.isNumber or setmetatable({}, {
 		return o
 end})
 local isNumber = Lib.isNumber
+
+Lib.strlowerCache = Lib.strlowerCache or setmetatable(
+{}, {
+	__index = function(t, i)
+		if not i then return end
+		local o
+		if type(i) == "number" then
+			o = i
+		else
+			o = strlower(i)
+		end
+		t[i] = o
+		return o
+	end,
+}) local strlowerCache = Lib.strlowerCache
 
 -- Matches lowercase spell names to their spellBookID
 Lib.spellsByName = Lib.spellsByName or {}
@@ -72,10 +88,10 @@ local function UpdateSpells()
 			local baseSpellName = GetSpellInfo(baseSpellID)
 			
 			if currentSpellName then
-				spellsByName[strlower(currentSpellName)] = spellBookID
+				spellsByName[strlowerCache[currentSpellName]] = spellBookID
 			end
 			if baseSpellName then
-				spellsByName[strlower(baseSpellName)] = spellBookID
+				spellsByName[strlowerCache[baseSpellName]] = spellBookID
 			end
 			
 			if currentSpellID then
@@ -106,8 +122,11 @@ UpdateSpells()
 -- local SpellRange = LibStub("SpellRange-1.0")
 -- local inRange = SpellRange.IsSpellInRange(17364, "mouseover")
 function Lib.IsSpellInRange(spell, unit)
-	local source = isNumber[spell] and spellsByID or spellsByName
-	spell = source[spell]
+	if isNumber[spell] then
+		spell = spellsByID[spell]
+	else
+		spell = spellsByName[strlowerCache[spell]]
+	end
 	
 	if spell then
 		return IsSpellInRange(spell, "spell", unit)
