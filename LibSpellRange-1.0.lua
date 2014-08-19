@@ -10,7 +10,7 @@
 -- @name LibSpellRange-1.0.lua
 
 local major = "SpellRange-1.0"
-local minor = 4
+local minor = 6
 
 assert(LibStub, format("%s requires LibStub.", major))
 
@@ -30,6 +30,7 @@ local GetSpellLink = _G.GetSpellLink
 local GetSpellInfo = _G.GetSpellInfo
 
 local IsSpellInRange = _G.IsSpellInRange
+local SpellHasRange = _G.SpellHasRange
 
 -- isNumber is basically a tonumber cache for maximum efficiency
 Lib.isNumber = Lib.isNumber or setmetatable({}, {
@@ -41,6 +42,7 @@ Lib.isNumber = Lib.isNumber or setmetatable({}, {
 end})
 local isNumber = Lib.isNumber
 
+-- strlower cache for maximum efficiency
 Lib.strlowerCache = Lib.strlowerCache or setmetatable(
 {}, {
 	__index = function(t, i)
@@ -71,13 +73,6 @@ local spellsByName_pet = Lib.spellsByName_pet
 -- Matches pet spellIDs to their spellBookID
 Lib.spellsByID_pet = Lib.spellsByID_pet or {}
 local spellsByID_pet = Lib.spellsByID_pet
-
--- Handles updating spellsByName and spellsByID
-if not Lib.updaterFrame then
-	Lib.updaterFrame = CreateFrame("Frame")
-end
-Lib.updaterFrame:UnregisterAllEvents()
-Lib.updaterFrame:RegisterEvent("SPELLS_CHANGED")
 
 -- Updates spellsByName and spellsByID
 local function UpdateBook(bookType)
@@ -115,6 +110,13 @@ local function UpdateBook(bookType)
 		end
 	end
 end
+
+-- Handles updating spellsByName and spellsByID
+if not Lib.updaterFrame then
+	Lib.updaterFrame = CreateFrame("Frame")
+end
+Lib.updaterFrame:UnregisterAllEvents()
+Lib.updaterFrame:RegisterEvent("SPELLS_CHANGED")
 
 local function UpdateSpells()
 	UpdateBook("spell")
@@ -163,6 +165,49 @@ function Lib.IsSpellInRange(spellInput, unit)
 		end
 		
 		return IsSpellInRange(spellInput, unit)
+	end
+	
+end
+
+
+--- Improved SpellHasRange.
+-- @name SpellRange.SpellHasRange
+-- @paramsig spell
+-- @param spell Name or spellID of a spell that you wish to check for a range. The spell must be a spell that you have in your spellbook or your pet's spellbook.
+-- @return Exact same returns as http://wowprogramming.com/docs/api/SpellHasRange
+-- @usage
+-- -- Check if a spell has a range by spell name
+-- local SpellRange = LibStub("SpellRange-1.0")
+-- local hasRange = SpellRange.SpellHasRange("Stormstrike")
+--
+-- -- Check if a spell has a range by spellID
+-- local SpellRange = LibStub("SpellRange-1.0")
+-- local hasRange = SpellRange.SpellHasRange(17364)
+function Lib.SpellHasRange(spellInput)
+	if isNumber[spellInput] then
+		local spell = spellsByID_spell[spellInput]
+		if spell then
+			return SpellHasRange(spell, "spell")
+		else
+			local spell = spellsByID_pet[spellInput]
+			if spell then
+				return SpellHasRange(spell, "pet")
+			end
+		end
+	else
+		local spellInput = strlowerCache[spellInput]
+		
+		local spell = spellsByName_spell[spellInput]
+		if spell then
+			return SpellHasRange(spell, "spell")
+		else
+			local spell = spellsByName_pet[spellInput]
+			if spell then
+				return SpellHasRange(spell, "pet")
+			end
+		end
+		
+		return SpellHasRange(spellInput)
 	end
 	
 end
