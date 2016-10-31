@@ -10,7 +10,7 @@
 -- @name LibSpellRange-1.0.lua
 
 local major = "SpellRange-1.0"
-local minor = 10
+local minor = 11
 
 assert(LibStub, format("%s requires LibStub.", major))
 
