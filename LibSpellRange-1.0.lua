@@ -10,7 +10,7 @@
 -- @name LibSpellRange-1.0.lua
 
 local major = "SpellRange-1.0"
-local minor = 16
+local minor = 17
 
 assert(LibStub, format("%s requires LibStub.", major))
 
@@ -21,6 +21,7 @@ local tonumber = _G.tonumber
 local strlower = _G.strlower
 local wipe = _G.wipe
 local type = _G.type
+local select = _G.select
 
 local GetSpellTabInfo = _G.GetSpellTabInfo
 local GetNumSpellTabs = _G.GetNumSpellTabs
@@ -34,6 +35,7 @@ local SpellHasRange = _G.SpellHasRange
 
 local UnitExists = _G.UnitExists
 local GetPetActionInfo = _G.GetPetActionInfo
+local UnitIsUnit = _G.UnitIsUnit
 
 -- isNumber is basically a tonumber cache for maximum efficiency
 Lib.isNumber = Lib.isNumber or setmetatable({}, {
@@ -86,6 +88,8 @@ Lib.actionsById_pet = Lib.actionsById_pet or {}
 local actionsById_pet = Lib.actionsById_pet
 
 -- Caches whether a pet spell has been observed to ever have had a range.
+-- Since this should never change for any particular spell,
+-- it is not wiped.
 Lib.petSpellHasRange = Lib.petSpellHasRange or {}
 local petSpellHasRange = Lib.petSpellHasRange
 
@@ -217,7 +221,7 @@ function Lib.IsSpellInRange(spellInput, unit)
 				-- IsSpellInRange seems to no longer work for pet spellbook,
 				-- so we also try the action bar API.
 				local actionSlot = actionsById_pet[spellInput]
-				if actionSlot then
+				if actionSlot and (unit == "target" or UnitIsUnit(unit, "target")) then
 					return select(9, GetPetActionInfo(actionSlot)) and 1 or 0
 				end
 			end
@@ -239,7 +243,7 @@ function Lib.IsSpellInRange(spellInput, unit)
 				-- IsSpellInRange seems to no longer work for pet spellbook,
 				-- so we also try the action bar API.
 				local actionSlot = actionsByName_pet[spellInput]
-				if actionSlot then
+				if actionSlot and (unit == "target" or UnitIsUnit(unit, "target")) then
 					return select(9, GetPetActionInfo(actionSlot)) and 1 or 0
 				end
 			end
