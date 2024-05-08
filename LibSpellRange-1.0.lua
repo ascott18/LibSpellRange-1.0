@@ -10,7 +10,7 @@
 -- @name LibSpellRange-1.0.lua
 
 local major = "SpellRange-1.0"
-local minor = 18
+local minor = 19
 
 assert(LibStub, format("%s requires LibStub.", major))
 
@@ -23,8 +23,6 @@ local wipe = _G.wipe
 local type = _G.type
 local select = _G.select
 
-local GetSpellTabInfo = _G.GetSpellTabInfo
-local GetNumSpellTabs = _G.GetNumSpellTabs
 local GetSpellBookItemInfo = _G.GetSpellBookItemInfo
 local GetSpellBookItemName = _G.GetSpellBookItemName
 local GetSpellLink = _G.GetSpellLink
@@ -94,6 +92,22 @@ Lib.petSpellHasRange = Lib.petSpellHasRange or {}
 local petSpellHasRange = Lib.petSpellHasRange
 
 -- Updates spellsByName and spellsByID
+
+local GetNumSpellTabs = _G.GetNumSpellTabs or C_SpellBook.GetNumSpellBookSkillLines
+local GetSpellTabInfo = _G.GetSpellTabInfo or function(index)
+	local skillLineInfo = C_SpellBook.GetSpellBookSkillLineInfo(index);
+	if skillLineInfo then
+		return	skillLineInfo.name,
+				skillLineInfo.iconID,
+				skillLineInfo.itemIndexOffset,
+				skillLineInfo.numSpellBookItems,
+				skillLineInfo.isGuild,
+				skillLineInfo.offSpecID,
+				skillLineInfo.shouldHide,
+				skillLineInfo.specID;
+	end
+end
+
 local function UpdateBook(bookType)
 	local max = 0
 	for i = 1, GetNumSpellTabs() do
