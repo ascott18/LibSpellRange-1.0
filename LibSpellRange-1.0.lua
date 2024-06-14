@@ -10,7 +10,7 @@
 -- @name LibSpellRange-1.0.lua
 
 local major = "SpellRange-1.0"
-local minor = 20
+local minor = 21
 
 assert(LibStub, format("%s requires LibStub.", major))
 
@@ -37,6 +37,7 @@ local IsSpellInRange = _G.IsSpellInRange or function(id, unit)
   end
   return nil
 end
+local isTWWSpellInRange = IsSpellInRange ~= _G.IsSpellInRange
 local IsSpellBookItemInRange = _G.IsSpellInRange or function(index, spellBank, unit)
   local result = C_SpellBook.IsSpellBookItemInRange(index, spellBank, unit)
   if result == true then
@@ -48,6 +49,7 @@ local IsSpellBookItemInRange = _G.IsSpellInRange or function(index, spellBank, u
 end
 
 local SpellHasRange = _G.SpellHasRange or _G.C_Spell.SpellHasRange
+local isTWWSpellHasRange = SpellHasRange ~= _G.SpellHasRange
 local SpellBookHasRange = _G.SpellHasRange or _G.C_SpellBook.IsSpellBookItemInRange
 
 local UnitExists = _G.UnitExists
@@ -265,6 +267,9 @@ function Lib.IsSpellInRange(spellInput, unit)
 				end
 			end
 		end
+		if isTWWSpellInRange then
+			return IsSpellInRange(spellInput, unit)
+		end
 	else
 		local spellInput = strlowerCache[spellInput]
 		
@@ -287,10 +292,8 @@ function Lib.IsSpellInRange(spellInput, unit)
 				end
 			end
 		end
-		
 		return IsSpellInRange(spellInput, unit)
 	end
-	
 end
 
 
@@ -319,6 +322,9 @@ function Lib.SpellHasRange(spellInput)
 				return SpellBookHasRange(spell, petBook) or petSpellHasRange[spellInput] or false
 			end
 		end
+		if isTWWSpellHasRange then
+			return SpellHasRange(spellInput)
+		end
 	else
 		local spellInput = strlowerCache[spellInput]
 		
@@ -332,8 +338,6 @@ function Lib.SpellHasRange(spellInput)
 				return SpellBookHasRange(spell, petBook) or petSpellHasRange[spellInput] or false
 			end
 		end
-		
 		return SpellHasRange(spellInput)
 	end
-	
 end
