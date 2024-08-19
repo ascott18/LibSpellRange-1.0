@@ -10,7 +10,7 @@
 -- @name LibSpellRange-1.0.lua
 
 local major = "SpellRange-1.0"
-local minor = 22
+local minor = 23
 
 assert(LibStub, format("%s requires LibStub.", major))
 
@@ -270,7 +270,13 @@ function Lib.IsSpellInRange(spellInput, unit)
 		if isTWWSpellInRange then
 			return IsSpellInRange(spellInput, unit)
 		else
-			return IsSpellInRange(GetSpellInfo(spellInput), unit)
+			-- Classic:
+			-- if "show all ranks" in spellbook is not ticked and the input was a lower rank of a spell, it won't exist in spellsByID_spell. 
+			-- Workaround this issue by testing by name when no result was found using spellbook
+			local name = GetSpellInfo(spellInput)
+			if name then
+				return IsSpellInRange(name, unit)
+			end
 		end
 	else
 		local spellInput = strlowerCache[spellInput]
@@ -327,7 +333,10 @@ function Lib.SpellHasRange(spellInput)
 		if isTWWSpellHasRange then
 			return SpellHasRange(spellInput)
 		else
-			return SpellHasRange(GetSpellInfo(spellInput))
+			local name = GetSpellInfo(spellInput)
+			if name then
+				return SpellHasRange(name)
+			end
 		end
 	else
 		local spellInput = strlowerCache[spellInput]
